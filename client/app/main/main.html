@@ -1,27 +1,37 @@
+<!-- client/app/main/main.html -->
+
 <div ng-include="'components/navbar/navbar.html'"></div>
 
-<header class="hero-unit" id="banner">
-  <div class="container">
-    <h1>'Allo, 'Allo!</h1>
-    <p class="lead">Kick-start your next web app with Angular Fullstack</p>
-    <img src="assets/images/yeoman.png" alt="I'm Yeoman">
-  </div>
-</header>
-
 <div class="container">
-  <div class="row">
-    <div class="col-lg-12">
-      <h1 class="page-header">Features:</h1>
-      <ul class="nav nav-tabs nav-stacked col-md-4 col-lg-4 col-sm-6" ng-repeat="thing in awesomeThings">
-        <li><a href="#" tooltip="{{thing.info}}">{{thing.name}}</a></li>
-      </ul>
-    </div>
+  <div ng-show="message.show" class="alert {{message.type}}">{{message.content}}</div>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <th>Floor</th>
+      <th>No. of People</th>
+      <th>Level you wish to go to</th>
+      <th>Elevator A</th>
+      <th>Elevator B</th>
+      <th>Elevator C</th>
+      <th>Elevator D</th>
+      <tr ng-repeat="floor in floors">
+        <td>{{ floor.level }}</td>
+	<td>
+	  <form class="form-inline" role="form">
+	     <div class="form-group">
+	        <label class="sr-only" for="floor.level">No. of people</label>
+		<input type="text" class="form-control" id="floor.level" ng-model="floor.people" placeholder="Enter amount of people">
+            </div>	    
+	  </form>
+	</td>
+	<td>
+	  <div class="form-group">
+	    <select ng-model="floor.toLevel" ng-options="choice.level for choice in floors"></select>
+	    <button type="button" ng-click="callNearestElevator(floor)" class="btn btn-success pull-right">Go!</button> 
+          </div>
+	</td>
+	<td ng-repeat="elevator in elevators"><div ng-if="floor.level != elevator.currentLevel">-</div><div ng-if="floor.level == elevator.currentLevel">{{elevator.people}}{{elevator.state}}</div></td>
+      </tr> 
+    </table>
   </div>
+	
 </div>
-
-<footer class="footer">
-  <div class="container">
-      <p><a href="https://twitter.com/tyhenkel">@tyhenkel</a> |
-         <a href="https://github.com/DaftMonk/generator-angular-fullstack/issues?state=open">Issues</a></p>
-  </div>
-</footer>

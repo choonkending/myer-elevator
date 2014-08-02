@@ -8,5 +8,5 @@ module.exports = {
     uri: 'mongodb://localhost/elevator-dev'
   },
 
-  seedDB: true
+  seedDB: false
 };
