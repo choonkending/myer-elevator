@@ -16,10 +16,10 @@
       <tr ng-repeat="floor in floors">
         <td>{{ floor.level }}</td>
 	<td>
-	  <form class="form-inline" role="form">
+	  <form class="form-inline">
 	     <div class="form-group">
 	        <label class="sr-only" for="floor.level">No. of people</label>
-		<input type="text" class="form-control" id="floor.level" ng-model="floor.people" placeholder="Enter amount of people">
+		<input type="text" only-digits class="form-control" id="floor.level" ng-model="floor.people">
             </div>	    
 	  </form>
 	</td>

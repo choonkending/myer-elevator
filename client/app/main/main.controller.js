@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('elevatorApp')
-  .controller('MainCtrl', function ($scope, $timeout) {
+  .controller('MainCtrl', function ($scope, $http, $timeout) {
     
     // Initialize the scope with floor and its values
     $scope.floors = [
@@ -32,10 +32,19 @@ angular.module('elevatorApp')
     // alert messages to notify user
     $scope.message ={ type:'alert-success', content:'', show:false };
 
+    
+    // Use our rest api to post a new comment
+    $scope.addElevatorStates = function(){
+      $http.post('api/states', { elevators : $scope.elevators });
+    };
+
     // moveElevator checks for each elevator and moves them either up/down/static
     // $timeout here is used as a 'tick' to indicate when the elevators should move up and down
     // if all elevators have arrived at their destinations, the timer will stop
     $scope.moveElevator= function(){
+      // Track elevators in database
+      $scope.addElevatorStates();
+
       for(var i in $scope.elevators){
 	var elevator = $scope.elevators[i];
 	
