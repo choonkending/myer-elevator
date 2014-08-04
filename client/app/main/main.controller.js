@@ -39,7 +39,7 @@ angular.module('elevatorApp')
     $scope.promise = null;
 
     // alert messages to notify user
-    $scope.message ={ type:'alert-success', content:'', show:false };
+    $scope.message ={ type:'alert-success', content:'Hi there! Welcome to Myer Elevators!', show: false };
 
     
     // Use our rest api to POST the array of elevators to mongoDB
