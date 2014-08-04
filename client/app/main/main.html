@@ -13,6 +13,7 @@
       <th>Elevator B</th>
       <th>Elevator C</th>
       <th>Elevator D</th>
+      <!-- Repeat for all floors taken from scope -->
       <tr ng-repeat="floor in floors">
         <td>{{ floor.level }}</td>
 	<td>
@@ -26,12 +27,14 @@
 	<td>
 	  <div class="form-group">
 	    <select ng-model="floor.toLevel" ng-options="choice.level for choice in floors"></select>
+	    <!--if go button is clicked, call callNearestElevator in MainCtrl -->
 	    <button type="button" ng-click="callNearestElevator(floor)" class="btn btn-success pull-right">Go!</button> 
           </div>
 	</td>
-	<td ng-repeat="elevator in elevators"><div ng-if="floor.level != elevator.currentLevel">-</div><div ng-if="floor.level == elevator.currentLevel">{{elevator.people}}{{elevator.state}}</div></td>
+	<!-- Loop through elevators for each floor. Using font awesome for symbols -->
+	<td ng-repeat="elevator in elevators" class="icon text-center"><div ng-if="floor.level != elevator.currentLevel">-</div><div ng-if="floor.level == elevator.currentLevel">{{elevator.people}} <span ng-if="elevator.state == '-'"><i class="fa fa-minus-square-o icon-fixed-width"></i></span><span ng-if="elevator.state == '^'"><i class="fa fa-caret-square-o-up icon-fixed-width"></i></span><span ng-if="elevator.state == '\\/'"><i class="fa fa-caret-square-o-down icon-fixed-width"></i></span></div></td>
       </tr> 
     </table>
   </div>
-	
+
 </div>

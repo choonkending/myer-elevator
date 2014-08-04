@@ -4,6 +4,9 @@ angular.module('elevatorApp')
   .controller('MainCtrl', function ($scope, $http, $timeout) {
     
     // Initialize the scope with floor and its values
+    // level: level of the floor
+    // toLevel: level people want to go to
+    // people: number of people on the floor
     $scope.floors = [
     { level: 10, toLevel :0, people: 0 },
     { level: 9, toLevel: 0, people: 0  },
@@ -18,6 +21,12 @@ angular.module('elevatorApp')
     ];
 
     // Initialize the scope with elevators and its values
+    // origin : floor where the button was pressed to call for an elevator
+    // destination: floor where the people want to go to
+    // state: - means stationary, ^ means going up, \/ means going down
+    // name : name of the elevator, i.e. A, B, C, D
+    // currentLevel: current level the elevator is at
+    // people: number of people waiting for the elevator
     $scope.elevators = [
     { name: 'A', currentLevel : 1, origin: 0, destination: 0, people: 0, state: '-'},
     { name: 'B', currentLevel : 8, origin: 0, destination: 0, people: 0, state: '-'},
@@ -26,14 +35,14 @@ angular.module('elevatorApp')
     
     ];
  
-    // promise return from $timeout 
+    // promise returned from $timeout 
     $scope.promise = null;
 
     // alert messages to notify user
     $scope.message ={ type:'alert-success', content:'', show:false };
 
     
-    // Use our rest api to post a new comment
+    // Use our rest api to POST the array of elevators to mongoDB
     $scope.addElevatorStates = function(){
       $http.post('api/states', { elevators : $scope.elevators });
     };
@@ -42,8 +51,9 @@ angular.module('elevatorApp')
     // $timeout here is used as a 'tick' to indicate when the elevators should move up and down
     // if all elevators have arrived at their destinations, the timer will stop
     $scope.moveElevator= function(){
-      // Track elevators in database
+      // Track elevators in database, this will make a POST request to MongoHQ
       $scope.addElevatorStates();
+
 
       for(var i in $scope.elevators){
 	var elevator = $scope.elevators[i];
@@ -54,45 +64,56 @@ angular.module('elevatorApp')
 	}else if(elevator.state === '\\/'){
 	  elevator.currentLevel = elevator.currentLevel - 1;
 	}
+	// Calls loadUnloadPassengers function to determine whether or not passengers need to be unloaded
 	$scope.loadUnloadPassengers(elevator);
-	// Check if elevator arrived at the origin
 	
       } 
-      
+     
+      // filter the array elevators and returns an array of only available elevators
       var available = $scope.filter($scope.elevators, $scope.testAvailable);
-      console.log(available);
+      
       if(available.length === $scope.elevators.length){
          // If all are available, this means that there are no more lifts in operation
-	 console.log('all available');
+	
 	 if($scope.promise !== null){
            console.log('Im cancelling bro');
+	   // if all lifts are available, stop timer. Lifts are all not moving. 
 	   $timeout.cancel($scope.promise);
 	 }
       }else{
-          
+        // use timeout for 1 second intervals in calling $scope.moveElevator again  
         $scope.promise = $timeout($scope.moveElevator, 1000);
       }
 
-
-      //console.log($scope.promise);
     };
 
     // This function decides whether or not to load and unload passengers at currentLevel
     $scope.loadUnloadPassengers = function(elevator){
+      // Test if elevator's current level is at the origin 
       if(elevator.currentLevel === elevator.origin){
 	  var currentFloor = $scope.findFloor($scope.floors, elevator.origin);
-          if(currentFloor.people > 20){
+          // if current floor has more than 20 people, only load 20 people onto the lift
+	  // the rest still remains on the floor
+	  if(currentFloor.people > 20){
 	    elevator.people = 20;
 	    currentFloor.people = currentFloor.people - 20;
 	  }else{
+          // if the current floor has less than 20 people, everyone will go onto the lift
 	    elevator.people = currentFloor.people;
 	    currentFloor.people = 0;
 	  }
-
+          
+	  // Assign the direction of the lift (that means changing the state to '-', '^' or '\/'
           $scope.assignDirection(elevator, elevator.destination);
           // reset origin to 0 to indicate that it has reached the origin
 	  elevator.origin = 0;
       }else if(elevator.currentLevel === elevator.destination){
+	// if the current level of the elevator is at the destination 
+
+	// test to see if elevator REALLy reached destination.
+	// When the elevator has reached the origin, we set the origin to 0
+	// This is to prevent the case where the elevator passes to the destination BEFORE reaching the 
+	// origin to pick up the passengers
         if(elevator.origin === 0){
 	  // unload passengers 
 	  var currentFloorA = $scope.findFloor($scope.floors, elevator.destination);
@@ -107,7 +128,9 @@ angular.module('elevatorApp')
       }
     };
 
+
     // findAbsoluteDifference is a function that finds the absolute value of the difference between a and b
+    // a and b are floor levels, and we want to find the difference between them
     $scope.findAbsoluteDifference = function(a, b){
       return Math.abs(a - b);
     };
@@ -124,6 +147,7 @@ angular.module('elevatorApp')
       }
       return null;
     };
+
     // $scope.filter is a higher order function
     // Pass in an array and a test function to filter
     // Just a little functional programming magic!
@@ -138,13 +162,16 @@ angular.module('elevatorApp')
     };
 
 
-    // testAvailable is a function that returns true if elevator is static (-) and is empty
+    // testAvailable is a function that returns true if 
+    // 1. elevator is static (-) and 
+    // 2. elevator is empty
     $scope.testAvailable = function(elevator){
     	return elevator.state === '-' && elevator.people === 0;
     };
 
 
-    // This function assigns the direction of the elevator according to the level 
+    // This function assigns the direction of the elevator according to the level it is headed to
+    // Eg. if elevator is at level 2, and is headed to level 5, then it is assigned the state '^'
     $scope.assignDirection = function(elevator, level){
       
 	if(elevator.currentLevel < level){
@@ -212,18 +239,6 @@ angular.module('elevatorApp')
 	// Change the state of the closest elevator
         // This heads to the origin
 	$scope.assignDirection($scope.closestElevator, floor.level);
-	/*
-	if($scope.closestElevator.currentLevel < floor.level){
-	  $scope.closestElevator.state = '^';
-	}else{
-	  $scope.closestElevator.state = '\\/';
-	}
-	*/
-	console.log($scope.closestElevator.name);
-       
-	console.log(floor.level);
-        console.log(floor.toLevel.level );
-        console.log(floor.people);
 
         $scope.moveElevator();
       }
